@@ -11,7 +11,7 @@
 
 // Interval between each temperature sample
 // Must be at least 1000ms for DHT11
-#define RefreshInterval_ms 1000
+#define RefreshInterval_ms 2000
 
 // The angle in degrees the servo needs
 // to turn to fully open the window
@@ -23,6 +23,8 @@ Servo servo;
 void setup() {
     Serial.begin(9600);
     servo.attach(ServoPin);
+    dht.begin();
+    delay(2000);
 }
 
 void loop() {
@@ -30,18 +32,20 @@ void loop() {
     static bool windowOpen = false;
 
     float temp = dht.readTemperature();
-    Serial.println(temp);
-    // Close window when temperature below ThresholdTemp - HystTemp
-    if (windowOpen && temp < ThresholdTemp - HystTemp) {
-        Serial.println("Closing window");
-        closeWindow();
-        windowOpen = false;
-    }
-    // Open window when temperature above ThresholdTemp
-    else if (windowOpen && temp > ThresholdTemp) {
-        Serial.println("Opening window");
-        openWindow();
-        windowOpen = true;
+    if (!isnan(temp)) {
+        Serial.println(temp);
+        // Close window when temperature below ThresholdTemp - HystTemp
+        if (windowOpen && temp < ThresholdTemp - HystTemp) {
+            Serial.println("Closing window");
+            closeWindow();
+            windowOpen = false;
+        }
+        // Open window when temperature above ThresholdTemp
+        else if (windowOpen && temp > ThresholdTemp) {
+            Serial.println("Opening window");
+            openWindow();
+            windowOpen = true;
+        }
     }
 
     delay(RefreshInterval_ms);
